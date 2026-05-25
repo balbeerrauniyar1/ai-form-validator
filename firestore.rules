@@ -1,0 +1,24 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users collection
+    match /users/{userId} {
+      allow read, write: if request.auth.uid == userId;
+    }
+
+    // Forms collection
+    match /forms/{formId} {
+      // Only authenticated users can read/write their own forms
+      allow read, write: if request.auth.uid == resource.data.userId;
+      
+      // Allow creating forms
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+    }
+
+    // Form results collection
+    match /formResults/{resultId} {
+      allow read, write: if request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+    }
+  }
+}
